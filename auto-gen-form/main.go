@@ -108,9 +108,14 @@ func UpdateMarkdownForm(ValidTestCases []string) error{
 		// row
 		if strings.Contains(line, "|"){
 			columns := strings.Split(line, "|")
-			if !((addValid && len(columns)>=6) || (!addValid && len(columns)>=7)){
-				log.Printf("invalid number of columns %v %v\n",len(columns),columns)
-				return errors.Wrap(err, "invalid number of columns")
+			if !((addValid && len(columns)==6) || (!addValid && len(columns)==7)){
+				if !(addValid && len(columns)>6){
+					log.Printf("invalid number of columns %v %v\n",len(columns),columns)
+					return errors.Wrap(err, "invalid number of columns")
+				}
+				columns[4] = strings.Join(columns[4:len(columns)-1],"\t")
+				columns = append(columns[:5],columns[len(columns)-1])
+				line = strings.Join(columns,"|")
 			}
 
 			if addValid {
