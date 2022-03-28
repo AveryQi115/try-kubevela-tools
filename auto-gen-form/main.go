@@ -15,8 +15,9 @@ import (
 
 const (
 	TestCaseGitURL = "https://github.com/oam-dev/catalog"
-	FormName = "cloud-resources-list.md"
+	FormName = "cloud-resources-list"
 	FormEnUrl = "https://raw.githubusercontent.com/oam-dev/kubevela.io/main/docs/end-user/components/cloud-services/cloud-resources-list.md"
+	FormZhUrl = "https://raw.githubusercontent.com/oam-dev/kubevela.io/main/i18n/zh/docusaurus-plugin-content-docs/current/end-user/components/cloud-services/cloud-resources-list.md"
 )
 
 func ReadTestCases() ([]string, error) {
@@ -70,9 +71,9 @@ func ReadTestCases() ([]string, error) {
 	return res, nil
 }
 
-func UpdateMarkdownForm(ValidTestCases []string) error{
+func UpdateMarkdownForm(ValidTestCases []string, formURL string, formNameSuffix string) error{
 	// read original form file
-	resp, err := http.Get(FormEnUrl)
+	resp, err := http.Get(formURL)
 	if err!=nil{
 		return errors.Wrap(err, "failed to get latest form")
 	}
@@ -88,7 +89,7 @@ func UpdateMarkdownForm(ValidTestCases []string) error{
 	lines := strings.Split(originFormContent,"\n")
 	for index,line := range lines{
 		// header
-		if strings.Contains(line, "Orchestration Type"){
+		if strings.Contains(line, "Orchestration Type") || strings.Contains(line, "编排类型"){
 			if strings.Contains(line, "Valid"){
 				continue
 			}
@@ -137,7 +138,7 @@ func UpdateMarkdownForm(ValidTestCases []string) error{
 	newFormContent := builder.String()
 
 	// write local form file
-	markdownFile := FormName
+	markdownFile := FormName+formNameSuffix+".md"
 	f, err := os.OpenFile(filepath.Clean(markdownFile), os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return fmt.Errorf("failed to open file %s: %w", markdownFile, err)
@@ -175,8 +176,10 @@ func main(){
 	if err!=nil{
 		log.Print(errors.Wrap(err,"read test cases failed"))
 	}
-	log.Printf("%+v\n", ValidTestCases)
-	if err = UpdateMarkdownForm(ValidTestCases);err!=nil{
+	//if err = UpdateMarkdownForm(ValidTestCases, FormEnUrl, "-en");err!=nil{
+	//	log.Print(errors.Wrap(err,"update markdown failed"))
+	//}
+	if err = UpdateMarkdownForm(ValidTestCases, FormZhUrl, "-zh");err!=nil{
 		log.Print(errors.Wrap(err,"update markdown failed"))
 	}
 }
